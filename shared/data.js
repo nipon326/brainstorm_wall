@@ -30,3 +30,21 @@ export function subscribeIdeas(q, cb) {
   });
   return () => { u1(); u2(); };
 }
+
+// สำหรับมือถือ: ฟังเฉพาะข้อความ + reaction ของตัวเอง (ไม่ฟัง reaction ของทุกคน) เพื่อลดจำนวน read
+// ตัวเลขรวมแสดงบนจอ /backdrop (ซึ่งใช้ subscribeIdeas) ; จึง counts/total ที่นี่เป็น 0 เสมอ
+export function subscribeIdeasMine(q, uid, cb) {
+  let ideas = [], mine = [];
+  const emit = () => cb(ideas.map((i) => ({
+    ...i, counts: {}, total: 0, mine: mine.filter((r) => r.ideaId === i.id),
+  })));
+  const u1 = onSnapshot(query(collection(db, "ideas"), where("q", "==", q)), (s) => {
+    ideas = s.docs.map((d) => ({ id: d.id, ...d.data(), createdMs: d.data().createdAt?.toMillis?.() ?? Date.now() }));
+    emit();
+  });
+  const u2 = onSnapshot(query(collection(db, "reactions"), where("uid", "==", uid), where("q", "==", q)), (s) => {
+    mine = s.docs.map((d) => d.data());
+    emit();
+  });
+  return () => { u1(); u2(); };
+}

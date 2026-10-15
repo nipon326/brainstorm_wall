@@ -1,7 +1,7 @@
 import { db, ensureSignedIn } from "../shared/firebase-init.js";
 import { doc, setDoc, deleteDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import { EVENT_TITLE, EVENT_SUBTITLE, QUESTIONS, REACTIONS, MAX_TEXT } from "../shared/config.js";
-import { subscribeIdeas } from "../shared/data.js";
+import { subscribeIdeasMine } from "../shared/data.js";
 
 const $ = (id) => document.getElementById(id);
 const NAME_KEY = "bw_name";
@@ -43,7 +43,7 @@ function selectQuestion(i) {
   [...$("tabs").children].forEach((b, k) => b.classList.toggle("on", k === i));
   $("question").textContent = QUESTIONS[i].text;
   unsub?.();
-  unsub = subscribeIdeas(i, render);
+  unsub = subscribeIdeasMine(i, user.uid, render);
 }
 
 $("text").oninput = () => ($("count").textContent = `${$("text").value.length}/${MAX_TEXT}`);
@@ -80,7 +80,7 @@ function render(ideas) {
     for (const r of REACTIONS) {
       const b = document.createElement("button");
       b.className = "react" + (mineType === r.key ? " on" : "");
-      b.textContent = `${r.emoji} ${idea.counts[r.key] || ""}`.trim();
+      b.textContent = `${r.emoji} ${r.label}`; // ตัวเลขรวมดูได้บนจอ ไม่ฟังข้อมูลทุกคนบนมือถือ (ลด read)
       b.title = r.label;
       b.onclick = () => react(idea, r.key);
       rs.appendChild(b);
