@@ -23,11 +23,20 @@ subscribeActiveQuestion((i) => {
   unsub = subscribeIdeas(q, render);
 });
 
-function render(ideas) {
-  $("empty").classList.toggle("hide", ideas.length > 0);
+const TOP_N = 40, NEWEST_N = 20; // ผู้ร่วมงาน ~150 คน: โชว์เฉพาะที่เด่น + ที่ใหม่ เพื่อให้อ่านออกจากไกลๆ
+let lastIdeas = [];
+let resizeTimer;
+window.addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => render(lastIdeas), 200); });
+
+function render(all) {
+  lastIdeas = all;
+  $("empty").classList.toggle("hide", all.length > 0);
+  // all เรียงตามคะแนนอยู่แล้ว: เอา TOP_N แรก + NEWEST_N ที่ใหม่สุดจากที่เหลือ
+  const top = all.slice(0, TOP_N);
+  const rest = all.slice(TOP_N).sort((a, b) => b.createdMs - a.createdMs).slice(0, NEWEST_N);
+  const ideas = [...top, ...rest];
+  $("shown").textContent = all.length > ideas.length ? `แสดง ${ideas.length} จาก ${all.length} ความเห็น` : `${all.length} ความเห็น`;
   const max = Math.max(1, ...ideas.map((i) => i.total));
-  // ขนาดการ์ดแปรตามจำนวน engagement (1.0 – 2.2) ; ลดขนาดฐานเมื่อมีเยอะเพื่อให้พอดีจอ
-  const base = ideas.length > 40 ? 0.7 : ideas.length > 20 ? 0.85 : 1;
   const seen = new Set();
   ideas.forEach((idea, rank) => {
     seen.add(idea.id);
@@ -41,11 +50,20 @@ function render(ideas) {
       $("cloud").appendChild(el);
       nodes.set(idea.id, el);
     }
-    const scale = base * (1 + 1.2 * (idea.total / max) * (idea.total > 0 ? 1 : 0));
-    el.style.setProperty("--s", scale.toFixed(2));
+    el.dataset.w = (1 + 1.2 * (idea.total / max) * (idea.total > 0 ? 1 : 0)).toFixed(2); // น้ำหนักตาม engagement
     el.style.order = rank;
     el.classList.toggle("hot", rank < 3 && idea.total > 0);
     el.querySelector(".stats").textContent = REACTIONS.filter((r) => idea.counts[r.key]).map((r) => `${r.emoji} ${idea.counts[r.key]}`).join("  ");
   });
   for (const [id, el] of nodes) if (!seen.has(id)) { el.remove(); nodes.delete(id); }
+  fit();
+}
+
+// ย่อขนาดฐานลงเรื่อยๆ จนการ์ดทั้งหมดพอดีพื้นที่ (ไม่ล้นจอ) ต่ำสุด 0.55 เพื่อไม่ให้เล็กจนอ่านไม่ได้
+function fit() {
+  const cloud = $("cloud");
+  let base = 1.1;
+  const apply = () => nodes.forEach((el) => el.style.setProperty("--s", (base * el.dataset.w).toFixed(2)));
+  apply();
+  while (base > 0.55 && cloud.scrollHeight > cloud.clientHeight + 1) { base -= 0.05; apply(); }
 }
