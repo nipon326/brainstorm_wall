@@ -6,13 +6,16 @@ import { subscribeActiveQuestion } from "../shared/data.js";
 
 requirePin();
 const $ = (id) => document.getElementById(id);
-ensureSignedIn();
+const ready = ensureSignedIn().catch((e) => alert("login ไม่สำเร็จ: " + (e.code || e.message)));
 
 // ---- สลับคำถาม ----
 const btns = QUESTIONS.map((q, i) => {
   const b = document.createElement("button");
   b.textContent = `${i + 1}. ${q.text}`;
-  b.onclick = () => setDoc(doc(db, "state", "session"), { activeQuestion: i });
+  b.onclick = async () => {
+    try { await ready; await setDoc(doc(db, "state", "session"), { activeQuestion: i }); }
+    catch (e) { alert("เปลี่ยนคำถามไม่สำเร็จ: " + (e.code || e.message)); }
+  };
   $("qbtns").appendChild(b);
   return b;
 });

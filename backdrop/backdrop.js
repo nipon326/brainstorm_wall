@@ -6,6 +6,7 @@ const $ = (id) => document.getElementById(id);
 const joinUrl = new URL("../join/", location.href).href;
 $("qr").src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(joinUrl)}`;
 
+window.onListenError = (m) => { $("shown").textContent = "⚠️ " + m; };
 let unsub = null, current = -1;
 const nodes = new Map(); // ideaId -> element (อัปเดตแทนสร้างใหม่ กันกระพริบ)
 

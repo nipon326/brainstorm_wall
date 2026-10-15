@@ -3,8 +3,11 @@ import { db } from "./firebase-init.js";
 import { collection, doc, onSnapshot, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import { REACTIONS } from "./config.js";
 
+// รายงาน error ของ listener ไปที่หน้า (ถ้ามี window.onListenError) และ console แทนที่จะเงียบ
+const onErr = (name) => (e) => { console.error(name, e); window.onListenError?.(`${name}: ${e.code || e.message}`); };
+
 export function subscribeActiveQuestion(cb) {
-  return onSnapshot(doc(db, "state", "session"), (s) => cb(s.exists() ? s.data().activeQuestion : 0));
+  return onSnapshot(doc(db, "state", "session"), (s) => cb(s.exists() ? s.data().activeQuestion : 0), onErr("state"));
 }
 
 // ideas ของคำถามข้อ q พร้อมนับ reaction -> cb(array เรียงตามคะแนนมากไปน้อย)
@@ -23,11 +26,11 @@ export function subscribeIdeas(q, cb) {
   const u1 = onSnapshot(query(collection(db, "ideas"), where("q", "==", q)), (s) => {
     ideas = s.docs.map((d) => ({ id: d.id, ...d.data(), createdMs: d.data().createdAt?.toMillis?.() ?? Date.now() }));
     emit();
-  });
+  }, onErr("ideas"));
   const u2 = onSnapshot(query(collection(db, "reactions"), where("q", "==", q)), (s) => {
     reactions = s.docs.map((d) => d.data());
     emit();
-  });
+  }, onErr("reactions"));
   return () => { u1(); u2(); };
 }
 
@@ -41,10 +44,10 @@ export function subscribeIdeasMine(q, uid, cb) {
   const u1 = onSnapshot(query(collection(db, "ideas"), where("q", "==", q)), (s) => {
     ideas = s.docs.map((d) => ({ id: d.id, ...d.data(), createdMs: d.data().createdAt?.toMillis?.() ?? Date.now() }));
     emit();
-  });
+  }, onErr("ideas"));
   const u2 = onSnapshot(query(collection(db, "reactions"), where("uid", "==", uid), where("q", "==", q)), (s) => {
     mine = s.docs.map((d) => d.data());
     emit();
-  });
+  }, onErr("reactions"));
   return () => { u1(); u2(); };
 }
