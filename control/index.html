@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Control</title>
+<link rel="stylesheet" href="../shared/theme.css" />
+<link rel="stylesheet" href="control.css" />
+</head>
+<body>
+  <main class="wrap">
+    <h1>🎛️ Control</h1>
+
+    <section class="card">
+      <h2>1) เลือกคำถามที่แสดงบนจอ</h2>
+      <div id="qbtns" class="qbtns"></div>
+    </section>
+
+    <section class="card">
+      <h2>2) Export</h2>
+      <button id="btn-export" class="btn-primary">⬇️ ดาวน์โหลด CSV (ทุกคำถาม พร้อมจำนวน Love/Like/ขำ)</button>
+      <p id="export-status"></p>
+    </section>
+
+    <section class="card">
+      <h2>3) ลิงก์ผู้ร่วมงาน</h2>
+      <img id="qr" alt="QR" />
+      <p><a id="join-link" target="_blank"></a></p>
+    </section>
+
+    <section class="card">
+      <h2>ลบข้อความไม่เหมาะสม</h2>
+      <div id="list"></div>
+    </section>
+  </main>
+  <script type="module" src="control.js"></script>
+</body>
+</html>

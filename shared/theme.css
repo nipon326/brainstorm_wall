@@ -1,0 +1,89 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap');
+
+:root {
+  --navy: #394E65; /* Blue Bottle Coffee blue, ตามที่ผู้จัดงานชอบ */
+  --blue-dark: #2d5f9e;
+  --blue-bright: #4a90d9;
+  --blue-light: #bfe0f5;
+  --pink: #f2c6d3;
+  --cream: #f7f1e6;
+  --white: #ffffff;
+  --accent: #ff6b35;
+  --shadow: 0 4px 20px rgba(57, 78, 101, 0.25);
+  --radius: 16px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Noto Sans Thai', system-ui, sans-serif;
+  background: var(--cream);
+  color: var(--navy);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+button:active { transform: scale(0.97); }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--blue-bright), var(--blue-dark));
+  color: var(--white);
+  padding: 12px 24px;
+  font-size: 1rem;
+  box-shadow: var(--shadow);
+}
+
+.btn-secondary {
+  background: var(--white);
+  color: var(--blue-dark);
+  border: 2px solid var(--blue-light);
+  padding: 10px 20px;
+}
+
+input, textarea {
+  font-family: inherit;
+  border: 2px solid var(--blue-light);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 1rem;
+  width: 100%;
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  border-color: var(--blue-bright);
+}
+
+.pin-gate-overlay {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, var(--navy), var(--blue-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.pin-gate-box {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 32px;
+  width: min(320px, 90vw);
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.pin-gate-box h2 { margin-top: 0; font-size: 1.1rem; }
+.pin-gate-box input { margin-bottom: 12px; text-align: center; letter-spacing: 4px; }
+.pin-gate-box button { width: 100%; padding: 12px; background: var(--blue-dark); color: var(--white); }
+.pin-error { color: #c0392b; min-height: 1.2em; font-size: 0.9rem; }
+
+body.pin-locked > *:not(.pin-gate-overlay) { filter: blur(6px); pointer-events: none; user-select: none; }

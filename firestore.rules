@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // คำถามที่กำลังแสดง (ทีมงานเปลี่ยนจาก /control)
+    match /state/session {
+      allow read: if true;
+      allow write: if request.auth != null
+                   && request.resource.data.keys().hasOnly(['activeQuestion'])
+                   && request.resource.data.activeQuestion is int
+                   && request.resource.data.activeQuestion >= 0
+                   && request.resource.data.activeQuestion < 10;
+    }
+
+    // ข้อความ: ต้อง login (anonymous ได้) 1 คนโพสต์ได้หลายข้อความ
+    match /ideas/{id} {
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.resource.data.keys().hasOnly(['q', 'text', 'name', 'uid', 'createdAt'])
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.q is int && request.resource.data.q >= 0 && request.resource.data.q < 10
+                    && request.resource.data.text is string
+                    && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 200
+                    && request.resource.data.name is string
+                    && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 40
+                    && request.resource.data.createdAt == request.time;
+      allow update: if false;
+      // ทีมงานลบข้อความไม่เหมาะสมได้ (PIN ฝั่ง client เท่านั้น)
+      allow delete: if request.auth != null;
+    }
+
+    // reaction: 1 คน 1 ข้อความ 1 reaction (doc id = ideaId_uid) เปลี่ยน/ยกเลิกได้
+    match /reactions/{rid} {
+      allow read: if true;
+      allow create, update: if request.auth != null
+                    && rid == request.resource.data.ideaId + '_' + request.auth.uid
+                    && request.resource.data.keys().hasOnly(['ideaId', 'q', 'uid', 'type'])
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.q is int
+                    && request.resource.data.type in ['love', 'like', 'haha'];
+      allow delete: if request.auth != null;
+    }
+  }
+}
