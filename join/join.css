@@ -18,3 +18,4 @@ h1 { margin: 8px 0 0; font-size: 1.5rem; text-align: center; }
 .reacts { display: flex; gap: 8px; }
 .react { background: var(--cream); color: var(--navy); padding: 6px 12px; font-size: .95rem; border: 2px solid transparent; }
 .react.on { border-color: var(--blue-bright); background: var(--blue-light); }
+.err { color: #c0392b; font-size: .85rem; word-break: break-word; margin: 8px 0 0; }

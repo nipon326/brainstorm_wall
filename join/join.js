@@ -15,8 +15,16 @@ $("text").maxLength = MAX_TEXT;
 const getName = () => { try { return localStorage.getItem(NAME_KEY) || ""; } catch { return ""; } };
 const setName = (v) => { try { v ? localStorage.setItem(NAME_KEY, v) : localStorage.removeItem(NAME_KEY); } catch {} };
 
+function showError(e) {
+  console.error(e);
+  $("login-error").textContent = `เข้าสู่ระบบไม่สำเร็จ: ${e.code || ""} ${e.message || e}`;
+  $("btn-login").disabled = false;
+}
+
 async function enter(name) {
-  user = await ensureSignedIn();
+  $("login-error").textContent = "";
+  $("btn-login").disabled = true;
+  try { user = await ensureSignedIn(); } catch (e) { return showError(e); }
   $("who-name").textContent = name;
   $("login").hidden = true;
   $("app").hidden = false;
