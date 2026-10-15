@@ -9,3 +9,6 @@
 .item .txt { flex: 1; font-size: .9rem; word-break: break-word; }
 .item small { opacity: .6; }
 .item button { background: #fde8e8; color: #c0392b; padding: 6px 12px; }
+.warn { color: #c0392b; font-size: .9rem; margin: 0 0 10px; }
+.btn-danger { background: #c0392b; color: #fff; padding: 12px 24px; font-size: 1rem; }
+.btn-danger:disabled { opacity: .5; }

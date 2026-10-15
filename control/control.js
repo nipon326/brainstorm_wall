@@ -33,6 +33,7 @@ async function loadAll() {
   }).sort((a, b) => a.q - b.q || b.total - a.total || a.createdMs - b.createdMs);
 }
 
+let exportedCount = null; // จำนวนที่ export ล่าสุดในรอบนี้ (null = ยังไม่ได้ export)
 const csvCell = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
 
 $("btn-export").onclick = async () => {
@@ -49,6 +50,7 @@ $("btn-export").onclick = async () => {
   const a = Object.assign(document.createElement("a"), { href: url, download: `brainstorm-${new Date().toISOString().slice(0, 10)}.csv` });
   a.click(); URL.revokeObjectURL(url);
   $("export-status").textContent = `ส่งออก ${rows.length} ข้อความแล้ว`;
+  exportedCount = rows.length;
 };
 
 // ---- รายการ + ลบ ----
@@ -74,3 +76,31 @@ onSnapshot(query(collection(db, "ideas"), orderBy("createdAt", "desc")), (s) => 
 const joinUrl = new URL("../join/", location.href).href;
 $("qr").src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(joinUrl)}`;
 $("join-link").href = $("join-link").textContent = joinUrl;
+
+// ---- ล้างข้อมูลทั้งหมด ----
+async function deleteAll(name) {
+  const snap = await getDocs(collection(db, name));
+  for (let i = 0; i < snap.docs.length; i += 400) { // batch จำกัด 500 ต่อครั้ง
+    const b = writeBatch(db);
+    snap.docs.slice(i, i + 400).forEach((d) => b.delete(d.ref));
+    await b.commit();
+  }
+  return snap.size;
+}
+
+$("btn-clear").onclick = async () => {
+  const status = $("clear-status");
+  try {
+    await ready;
+    if (exportedCount === null) return alert("กรุณากด \"ดาวน์โหลด CSV\" ก่อน เพื่อสำรองข้อมูล แล้วค่อยล้าง");
+    const current = (await getDocs(collection(db, "ideas"))).size;
+    if (current !== exportedCount &&
+        !confirm(`ตอนนี้มี ${current} ข้อความ แต่ไฟล์ที่ export มี ${exportedCount} ข้อความ (มีข้อความเปลี่ยนไป)\nแนะนำให้ Export ใหม่ก่อน — ล้างต่อเลยหรือไม่?`)) return;
+    if (prompt(`จะลบ ${current} ข้อความและ reaction ทั้งหมด กู้คืนไม่ได้\nพิมพ์คำว่า "ล้าง" เพื่อยืนยัน`) !== "ล้าง") return;
+    $("btn-clear").disabled = true; status.textContent = "กำลังลบ…";
+    const r = await deleteAll("reactions"), i = await deleteAll("ideas");
+    exportedCount = null;
+    status.textContent = `ล้างแล้ว: ${i} ข้อความ, ${r} reaction`;
+  } catch (e) { status.textContent = "ล้างไม่สำเร็จ: " + (e.code || e.message); }
+  $("btn-clear").disabled = false;
+};
