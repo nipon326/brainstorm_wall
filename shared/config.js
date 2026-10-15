@@ -2,12 +2,12 @@
 
 // 1) Firebase project config (สร้าง project ใหม่ แล้วเอาค่าจาก Project settings > Your apps > Web)
 export const firebaseConfig = {
-  apiKey: "REPLACE_ME",
-  authDomain: "REPLACE_ME.firebaseapp.com",
-  projectId: "REPLACE_ME",
-  storageBucket: "REPLACE_ME.firebasestorage.app",
-  messagingSenderId: "REPLACE_ME",
-  appId: "REPLACE_ME",
+  apiKey: "AIzaSyDQODXUfYhTJ18722N67deet8DOPQBN-0I",
+  authDomain: "brainstorm-wall.firebaseapp.com",
+  projectId: "brainstorm-wall",
+  storageBucket: "brainstorm-wall.firebasestorage.app",
+  messagingSenderId: "900245024655",
+  appId: "1:900245024655:web:f5a195c47de493fffee5fa",
 };
 
 // 2) PIN หน้า /control (กันกดผิด ไม่ใช่ความปลอดภัยจริงจัง)
