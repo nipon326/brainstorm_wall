@@ -28,7 +28,7 @@ function buildTabs() {
     b.onclick = () => {
       mode = value;
       history.replaceState(null, "", value === "live" ? location.pathname + location.search : `#${value + 1}`);
-      buildTabs(); show();
+      buildTabs(); show(); $("cloud").scrollTop = 0;
     };
     tabs.appendChild(b);
   };
@@ -38,7 +38,7 @@ function buildTabs() {
 
 function show() {
   const q = Math.min(mode === "live" ? liveQ : mode, QUESTIONS.length - 1);
-  if (q === current) return;
+  if (q === current) { render(lastIdeas); return; }
   current = q;
   $("qnum").textContent = `คำถามที่ ${q + 1} / ${QUESTIONS.length}`;
   $("question").textContent = QUESTIONS[q].text;
@@ -60,9 +60,12 @@ function render(all) {
   lastIdeas = all;
   $("empty").classList.toggle("hide", all.length > 0);
   // all เรียงตามคะแนนอยู่แล้ว: เอา TOP_N แรก + NEWEST_N ที่ใหม่สุดจากที่เหลือ
+  // โหมดเลือกดูเอง: แสดงครบทุกความเห็น เลื่อนดูได้ / โหมดจอหลัก: คัดเฉพาะเด่น+ใหม่ ให้พอดีจอ
+  const browse = mode !== "live";
+  $("cloud").classList.toggle("browse", browse);
   const top = all.slice(0, TOP_N);
   const rest = all.slice(TOP_N).sort((a, b) => b.createdMs - a.createdMs).slice(0, NEWEST_N);
-  const ideas = [...top, ...rest];
+  const ideas = browse ? all : [...top, ...rest];
   $("shown").textContent = all.length > ideas.length ? `แสดง ${ideas.length} จาก ${all.length} ความเห็น` : `${all.length} ความเห็น`;
   const max = Math.max(1, ...ideas.map((i) => i.total));
   const seen = new Set();
@@ -91,7 +94,16 @@ function render(all) {
 function fit() {
   const cloud = $("cloud");
   let base = 1.1;
+  if (cloud.classList.contains("browse")) base = 0.9;
   const apply = () => nodes.forEach((el) => el.style.setProperty("--s", (base * el.dataset.w).toFixed(2)));
   apply();
-  while (base > 0.55 && cloud.scrollHeight > cloud.clientHeight + 1) { base -= 0.05; apply(); }
+  while (!cloud.classList.contains("browse") && base > 0.55 && cloud.scrollHeight > cloud.clientHeight + 1) { base -= 0.05; apply(); }
 }
+
+// ลากเพื่อเลื่อน (เมาส์) — บนมือถือใช้การปัดนิ้วตามปกติ
+(() => {
+  const c = $("cloud"); let y0 = 0, t0 = 0, drag = false;
+  c.addEventListener("pointerdown", (e) => { if (e.pointerType !== "mouse") return; drag = true; y0 = e.clientY; t0 = c.scrollTop; c.classList.add("dragging"); });
+  window.addEventListener("pointermove", (e) => { if (drag) c.scrollTop = t0 - (e.clientY - y0); });
+  window.addEventListener("pointerup", () => { drag = false; c.classList.remove("dragging"); });
+})();
