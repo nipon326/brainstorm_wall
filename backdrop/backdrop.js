@@ -5,7 +5,7 @@ import { ensureSignedIn } from "../shared/firebase-init.js";
 const $ = (id) => document.getElementById(id);
 const joinUrl = new URL("../join/", location.href).href;
 $("joinlink").href = joinUrl;
-$("joinlink").textContent = joinUrl.replace(/^https?:\/\//, "");
+$("joinlink").textContent = "ใส่ความเห็นเพิ่มเติม";
 $("qr").src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(joinUrl)}`;
 
 window.onListenError = (m) => { $("shown").textContent = "⚠️ " + m; };
