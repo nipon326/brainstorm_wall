@@ -13,8 +13,31 @@ const nodes = new Map(); // ideaId -> element (อัปเดตแทนสร
 // anonymous login เงียบๆ เพื่อให้อ่าน Firestore ได้เหมือนทุกหน้า (rules อ่านเปิดอยู่ แต่เผื่อเข้มขึ้นภายหลัง)
 ensureSignedIn().catch(() => {});
 
-subscribeActiveQuestion((i) => {
-  const q = Math.min(i, QUESTIONS.length - 1);
+// mode: "live" = ตามคำถามที่ทีมงานเลือกใน /control (ค่าเริ่มต้น, จอโปรเจคเตอร์) | ตัวเลข = ผู้ชมเลือกดูเองรายข้อ
+let mode = "live", liveQ = 0;
+const fromHash = parseInt(location.hash.slice(1), 10) - 1;
+if (fromHash >= 0 && fromHash < QUESTIONS.length) mode = fromHash;
+
+function buildTabs() {
+  const tabs = $("tabs");
+  tabs.innerHTML = "";
+  const add = (label, value) => {
+    const b = document.createElement("button");
+    b.textContent = label;
+    b.classList.toggle("on", mode === value);
+    b.onclick = () => {
+      mode = value;
+      history.replaceState(null, "", value === "live" ? location.pathname + location.search : `#${value + 1}`);
+      buildTabs(); show();
+    };
+    tabs.appendChild(b);
+  };
+  add("📺 ตามจอหลัก", "live");
+  QUESTIONS.forEach((q, i) => add(`ข้อ ${i + 1}: ${q.short || ""}`, i));
+}
+
+function show() {
+  const q = Math.min(mode === "live" ? liveQ : mode, QUESTIONS.length - 1);
   if (q === current) return;
   current = q;
   $("qnum").textContent = `คำถามที่ ${q + 1} / ${QUESTIONS.length}`;
@@ -22,7 +45,11 @@ subscribeActiveQuestion((i) => {
   nodes.forEach((n) => n.remove()); nodes.clear();
   unsub?.();
   unsub = subscribeIdeas(q, render);
-});
+}
+
+buildTabs();
+subscribeActiveQuestion((i) => { liveQ = i; show(); });
+if (mode !== "live") show();
 
 const TOP_N = 40, NEWEST_N = 20; // ผู้ร่วมงาน ~150 คน: โชว์เฉพาะที่เด่น + ที่ใหม่ เพื่อให้อ่านออกจากไกลๆ
 let lastIdeas = [];

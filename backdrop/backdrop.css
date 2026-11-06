@@ -3,7 +3,7 @@ header { padding: 2.2vh 4vw 0; }
 #qnum { font-size: 1.6vh; letter-spacing: .2em; text-transform: uppercase; opacity: .6; }
 h1 { margin: .5vh 0 0; font-size: 3.6vh; line-height: 1.3; }
 #cloud {
-  position: absolute; inset: 14vh 2vw 2vh;
+  position: absolute; inset: 20vh 2vw 2vh;
   display: flex; flex-wrap: wrap; justify-content: center; align-content: center; align-items: center;
   gap: 1.4vh 1.2vw; overflow: hidden;
 }
@@ -26,3 +26,6 @@ h1 { margin: .5vh 0 0; font-size: 3.6vh; line-height: 1.3; }
 #empty.hide { display: none; }
 #qr { position: fixed; right: 1.5vw; bottom: 2vh; width: 14vh; height: 14vh; border-radius: 12px; background: #fff; padding: 6px; box-shadow: var(--shadow); }
 #shown { position: fixed; left: 2vw; bottom: 1vh; font-size: 1.6vh; opacity: .55; }
+#tabs { display: flex; flex-wrap: wrap; gap: 1vh 1vw; padding: 1.2vh 4vw 0; }
+#tabs button { font: inherit; font-size: max(1.8vh, 13px); padding: .6vh 1.4vh; border-radius: 999px; border: 2px solid var(--blue-light); background: var(--white); color: var(--navy); cursor: pointer; }
+#tabs button.on { background: var(--navy); border-color: var(--navy); color: var(--white); }
