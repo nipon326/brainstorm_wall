@@ -1,6 +1,7 @@
 import { QUESTIONS, REACTIONS } from "../shared/config.js";
 import { subscribeActiveQuestion, subscribeIdeas } from "../shared/data.js";
-import { ensureSignedIn } from "../shared/firebase-init.js";
+import { db, ensureSignedIn } from "../shared/firebase-init.js";
+import { doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const $ = (id) => document.getElementById(id);
 const joinUrl = new URL("../join/", location.href).href;
@@ -13,7 +14,18 @@ let unsub = null, current = -1;
 const nodes = new Map(); // ideaId -> element (อัปเดตแทนสร้างใหม่ กันกระพริบ)
 
 // anonymous login เงียบๆ เพื่อให้อ่าน Firestore ได้เหมือนทุกหน้า (rules อ่านเปิดอยู่ แต่เผื่อเข้มขึ้นภายหลัง)
-ensureSignedIn().catch(() => {});
+let user = null;
+ensureSignedIn().then((u) => { user = u; render(lastIdeas); }).catch(() => {});
+
+// กดซ้ำปุ่มเดิม = ยกเลิก, กดปุ่มอื่น = เปลี่ยน reaction (1 คน 1 ความเห็น 1 reaction)
+async function react(idea, key) {
+  if (!user) { try { user = await ensureSignedIn(); } catch { return; } }
+  const ref = doc(db, "reactions", `${idea.id}_${user.uid}`);
+  try {
+    if (idea.mine.find((r) => r.uid === user.uid)?.type === key) await deleteDoc(ref);
+    else await setDoc(ref, { ideaId: idea.id, q: idea.q, uid: user.uid, type: key });
+  } catch (e) { window.onListenError?.("react: " + (e.code || e.message)); }
+}
 
 // mode: "live" = ตามคำถามที่ทีมงานเลือกใน /control (ค่าเริ่มต้น, จอโปรเจคเตอร์) | ตัวเลข = ผู้ชมเลือกดูเองรายข้อ
 let mode = "live", liveQ = 0;
@@ -78,6 +90,13 @@ function render(all) {
       el = document.createElement("div");
       el.className = "card";
       el.innerHTML = `<div class="t"></div><div class="by"></div><div class="stats"></div>`;
+      const stats = el.querySelector(".stats");
+      for (const r of REACTIONS) {
+        const b = document.createElement("button");
+        b.dataset.key = r.key; b.title = r.label;
+        b.onclick = () => react(el._idea, r.key);
+        stats.appendChild(b);
+      }
       el.querySelector(".t").textContent = idea.text;
       el.querySelector(".by").textContent = idea.name;
       $("cloud").appendChild(el);
@@ -86,7 +105,13 @@ function render(all) {
     el.dataset.w = (1 + 1.2 * (idea.total / max) * (idea.total > 0 ? 1 : 0)).toFixed(2); // น้ำหนักตาม engagement
     el.style.order = rank;
     el.classList.toggle("hot", rank < 3 && idea.total > 0);
-    el.querySelector(".stats").textContent = REACTIONS.filter((r) => idea.counts[r.key]).map((r) => `${r.emoji} ${idea.counts[r.key]}`).join("  ");
+    el._idea = idea;
+    const myType = user && idea.mine.find((r) => r.uid === user.uid)?.type;
+    el.querySelectorAll(".stats button").forEach((b) => {
+      const r = REACTIONS.find((x) => x.key === b.dataset.key), n = idea.counts[r.key];
+      b.textContent = n ? `${r.emoji} ${n}` : r.emoji;
+      b.classList.toggle("on", myType === r.key);
+    });
   });
   for (const [id, el] of nodes) if (!seen.has(id)) { el.remove(); nodes.delete(id); }
   fit();
@@ -105,7 +130,7 @@ function fit() {
 // ลากเพื่อเลื่อน (เมาส์) — บนมือถือใช้การปัดนิ้วตามปกติ
 (() => {
   const c = $("cloud"); let y0 = 0, t0 = 0, drag = false;
-  c.addEventListener("pointerdown", (e) => { if (e.pointerType !== "mouse") return; drag = true; y0 = e.clientY; t0 = c.scrollTop; c.classList.add("dragging"); });
+  c.addEventListener("pointerdown", (e) => { if (e.pointerType !== "mouse" || e.target.closest("button")) return; drag = true; y0 = e.clientY; t0 = c.scrollTop; c.classList.add("dragging"); });
   window.addEventListener("pointermove", (e) => { if (drag) c.scrollTop = t0 - (e.clientY - y0); });
   window.addEventListener("pointerup", () => { drag = false; c.classList.remove("dragging"); });
 })();
