@@ -24,10 +24,11 @@ h1 { margin: .5vh 0 0; font-size: 3.6vh; line-height: 1.3; }
 @keyframes pop { from { transform: scale(.3); opacity: 0; } }
 #empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 3vh; opacity: .5; pointer-events: none; }
 #empty.hide { display: none; }
-#qr { position: fixed; right: 1.5vw; bottom: 2vh; width: 14vh; height: 14vh; border-radius: 12px; background: #fff; padding: 6px; box-shadow: var(--shadow); }
+#qr { position: fixed; right: 1.5vw; bottom: 5vh; width: 14vh; height: 14vh; border-radius: 12px; background: #fff; padding: 6px; box-shadow: var(--shadow); }
 #shown { position: fixed; left: 2vw; bottom: 1vh; font-size: 1.6vh; opacity: .55; }
 #tabs { display: flex; flex-wrap: wrap; gap: 1vh 1vw; padding: 1.2vh 4vw 0; }
 #tabs button { font: inherit; font-size: max(1.8vh, 13px); padding: .6vh 1.4vh; border-radius: 999px; border: 2px solid var(--blue-light); background: var(--white); color: var(--navy); cursor: pointer; }
 #tabs button.on { background: var(--navy); border-color: var(--navy); color: var(--white); }
 #cloud.browse { align-content: flex-start; padding-bottom: 12vh; }
 #cloud.dragging { cursor: grabbing; user-select: none; }
+#joinlink { position: fixed; right: 1.5vw; bottom: 1.2vh; max-width: 40vw; text-align: right; font-size: max(1.8vh, 12px); font-weight: 600; color: var(--blue-dark); background: rgba(255,255,255,.85); padding: .4vh 1vh; border-radius: 8px; text-decoration: underline; word-break: break-all; }
